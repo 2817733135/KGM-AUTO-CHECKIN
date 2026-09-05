@@ -1,0 +1,22 @@
+name: 工作流微信通知
+on:
+  workflow_run:
+    workflows: ["*"]
+    types: [completed]
+jobs:
+  notify_wechat:
+    runs-on: ubuntu‑latest
+    permissions:
+      actions: read
+    steps:
+      - name: 发送微信通知
+        env:
+          TOKEN: ${{ secrets.PUSHPLUS_TOKEN }}
+          RUN_STATUS: ${{ github.event.workflow_run.conclusion }}
+          REPO_NAME: ${{ github.repository }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          curl -X POST https://www.pushplus.plus/send \
+          -d "token=${TOKEN}&title=GitHub任务:${RUN_STATUS}&content=仓库：${REPO_NAME}
+状态：${RUN_STATUS}
+执行链接：${RUN_URL}"
