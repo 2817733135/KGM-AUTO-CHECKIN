@@ -1,0 +1,28 @@
+name:企业微信任务通知
+on:
+  workflow_run:
+    workflows: ["*"]
+    types: [completed]
+
+jobs:
+  notify_wework:
+    runs‑on: ubuntu‑latest
+    permissions:
+      actions: read
+    steps:
+      - name:发送企业微信通知
+        env:
+          WEBHOOK: ${{ secrets.WEWORK_WEBHOOK }}
+          STATUS: ${{ github.event.workflow_run.conclusion }}
+          REPO: ${{ github.repository }}
+          RUN_URL: ${{ github.event.workflow_run.html_url }}
+        run: |
+          curl -X POST "${WEBHOOK}" \
+          -H "Content‑Type: application/json" \
+          -d '{
+            "msgtype":"text",
+            "text":{
+              "content":"GitHub工作流执行结果\n仓库：${REPO}\n状态：${STATUS}\n执行链接：${RUN_URL}"
+            }
+          }'
+
